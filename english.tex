@@ -1,0 +1,965 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage[a4paper,margin=1in]{geometry}
+
+\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
+
+\usepackage{hyperref}
+
+\usepackage{array}
+\usepackage{multirow}
+
+\definecolor{mygreen}{rgb}{0,0.2,0}
+\definecolor{mygray}{rgb}{0.95,0.95,0.95}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstdefinelanguage{mylog}{
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/}
+}
+
+\title{GeoGebra Discovery Automated Reasoning Tools\\ \large A Tutorial}
+\author{Zolt\'an Kov\'acs, Tom\'as Recio and M. Pilar V\'elez}
+%\date{May 2024}
+
+\begin{document}
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  backgroundcolor=\color{mygray},
+  keywordstyle=\color{blue},
+  stringstyle=\color{mymauve},
+  ndkeywordstyle=\color{red},
+  commentstyle=\color{mymauve},
+  identifierstyle=\color{mygreen}
+}
+
+\newcommand{\mode}[1]{{\raisebox{-.15\height}{\includegraphics[width=0.4cm]{icons/mode_#1.png}}}}
+
+\tolerance10000
+
+
+\maketitle
+
+\begin{abstract}
+This document introduces, describes and exemplifies the technical
+features of some recently implemented automated reasoning tools
+in a fork of the dynamic mathematics software GeoGebra.
+The new tools are based on symbolic computation
+algorithms, allowing the automatic and rigorous proving and
+discovery of theorems on constructed geometric figures.
+Some examples of the use in the classroom of such commands
+are provided, including one describing how intuitive handling
+of GeoGebra Discovery automated reasoning tools may result in
+unexpected outputs. In all cases the emphasis is made in the
+potential utility of these tools as a guiding stick to foster
+student activities (exploration, reasoning) in the learning of
+elementary geometry. Moreover, a collection of appendices
+describing other, more sophisticated, low-level GeoGebra Discovery
+tools (Prove, ProveDetails), as well as instructions on how to
+obtain the translation of GeoGebra Discovery commands into other
+languages, and details about debugging, are included.
+\end{abstract}
+
+
+\section{Introduction}
+
+The software tool GeoGebra (\url{https://www.geogebra.org}) can support the teaching of Euclidean plane geometry theorems in various ways. In this tutorial we focus on some new features, based on symbolic computations,  allowing the automatic proving and discovery of theorems on geometric figures constructed with GeoGebra
+Discovery, a fork of GeoGebra, available at \url{https://github.com/kovzol/geogebra-discovery}.
+
+This novel technology attempts to address recent challenges
+in mathematics education \cite{HowsonWilson,Davis,SinclairBartoliniBussiDeVilliersOwens,Quaresma,RichardOllerMeavilla},
+it is however still in an experimental phase in the classroom \cite{KovacsRecioRichardVelez,Kovacs2017}.
+This document summarizes its technical possibilities and describes in detail how to use them through some examples. The tutorial is aimed at users who already
+have some basic knowledge on GeoGebra and want to learn about the recently implemented automated reasoning commands.
+
+The next Section \ref{sec:starting} provides a brief introduction to
+GeoGebra Discovery, as the host software for the automated reasoning
+package. Section \ref{sec:art}, after a global introduction to these tools,
+describes in detail, through examples, the characteristics of the
+\texttt{Relation}, \texttt{LocusEquation} and \texttt{Envelope} commands,
+considered as the most immediate and useful for the classroom
+context. It is appended with some technical remarks,
+providing some hints about cases of possible strange
+behaviour of these commands (for instance, that automatic
+reasoning is not yet possible for figures that include arbitrary
+degree curves).
+
+Section \ref{sec:classroom} presents two detailed teaching scenarios that
+could be approached with the automated reasoning tools,
+involving, respectively, Thales’ circle and the midline
+theorems. Further examples are summarily mentioned in \ref{sec:further}.
+On the other hand, Thales’ circle theorem is also addressed in
+Section \ref{sec:limits}, calling the reader to be beware of some common
+misinterpretations in using automated reasoning tools that
+may result in unexpected outputs.
+
+The paper ends with some general conclusions and a
+collection of three appendices: one, that describes other,
+relatively sophisticated for just classroom use, automated
+reasoning commands (\texttt{Prove}, \texttt{ProveDetails}, etc.); a second
+appendix that explains how to get the translation of the
+commands to different languages; and, finally, a short note on
+how to get debug messages to allow a technical user to have
+further information about the performed computations.
+
+
+\section{Starting GeoGebra Discovery}\label{sec:starting}
+
+GeoGebra Discovery is available on many platforms, including desktop or laptop computers with various operating systems installed.
+
+Some specific GeoGebra Discovery tools could however differ on the different platforms. Also, the user experience on the various platforms may be different: the required symbolic computations may need a high amount of calculations and the underlying hardware or software components could or could not support some steps completely.
+
+The recommended platform for classroom use can vary. The fastest results can be obtained by fast desktop (or laptop) computers, but in this case the software must be downloaded and installed by the user. Some examples in this tutorial will work only in the ``desktop'' version (which is created for Microsoft Windows, Apple Macintosh and Linux desktop and laptop computers). On the other hand, the ``web'' version (it is available at \url{https://autgeo.online}) does not require installation by the user: it will run in a modern web browser. The ``web'' version is however usually slower than the desktop one: the symbolic computations may be slower by a magnitude.
+
+There is a continuous workflow improving GeoGebra Discovery's automated reasoning tools. Thus, the best practice is to always use the latest version from \url{https://github.com/kovzol/geogebra/releases}. A two-weekly update is usually performed for all versions. The list of newest changes can be found at \url{https://github.com/kovzol/geogebra/commits/master/}---although this piece of information is intended only for advanced users and developers. Everyone is welcome to join the mailing list at \url{https://groups.google.com/g/geogebra-discovery}.
+
+Some tools provided by GeoGebra Discovery are also available in the mainstream version of GeoGebra. They are, however, not maintained by the GeoGebra team at the moment. As a result it is possible that GeoGebra Discovery performs significantly better in various application fields than the mainstream version. Documentation of the automated reasoning tools in GeoGebra can be found at \url{https://github.com/kovzol/gg-art-doc} and
+\cite{KovacsRecioVelez2}.
+
+To get up-to-date information on recent papers on GeoGebra Discovery, the best option is to visit \url{https://github.com/kovzol/geogebra-discovery?tab=readme-ov-file#references}. Some of these papers are listed in the References, but not all of them.
+
+\section{Automated Reasoning Tools}\label{sec:art}
+
+Automated reasoning tools are a collection of GeoGebra Discovery features and commands that allow to conjecture, discover, adjust and prove geometric statements in a dynamic geometric construction.
+
+To start with,  the user needs to draw a geometric figure by using certain tools listed by default on top of the main window in GeoGebra and
+GeoGebra Discovery. After constructing the figure, GeoGebra has many ways to promote investigating geometrical properties of a figure,  through various tools and settings:
+\begin{enumerate}
+    \item By \textit{dragging the free objects}, the behaviour of their dependent objects can be visually investigated.
+    \item The \textit{Relation} tool helps comparing objects and obtaining relations among them.
+    \item By setting on/off the \textit{trace} of a constructed object,  the movement of a ``descendant" object will be visualized when its ``parent'' objects are changing.
+    \item The \textit{Locus} tool shows the trace of an object for all possible positions of a parent object moving on a certain path.
+    \item By typing the \texttt{Relation} or \texttt{Locus} command in GeoGebra's \textit{Input Bar} more refined information can be obtained.
+\end{enumerate}
+These methods are usually well known by the GeoGebra community, and therefore they are well documented, and many examples can be found on them at GeoGebra Materials (\url{https://www.geogebra.org/materials/}). On the other hand, GeoGebra also offers symbolic automated reasoning tools for generalizing some observed/conjectured geometric properties:
+\begin{enumerate}
+\setcounter{enumi}{5}
+    \item The Relation tool and command can be used to recompute the numerical results symbolically.
+    \item The \texttt{LocusEquation} command refines the result of the Locus command by displaying the algebraic equation of the graphical output (see Section \ref{sec:TechnicalNotes} for a list of possible
+limitations).
+    \item The \texttt{LocusEquation} command can investigate implicit loci.
+    \item The \texttt{Envelope} command computes the equation of a curve which is tangent to a family of objects while a certain parent of the family moves on a path.
+\end{enumerate}
+In addition, GeoGebra Discovery extends these feature by the following items:
+\begin{enumerate}
+\setcounter{enumi}{9}
+    \item The \texttt{LocusEquation} and \texttt{Envelope} commands are available as tools.
+    \item The Discover tool and command detect for geometric relationships between objects that are in true in general.
+    \item The \texttt{StepwiseDiscovery} command and the corresponding tool invokes the previously mentioned feature on each newly created point.
+    \item The \texttt{Plot2D} command plots a topologically faithful visual representation of logical connectives of algebraic equations or inequalities.
+    \item The Relation tool and command can compare lengths of segments symbolically. This may involve inequalities as well.
+    \item The \texttt{RealQuantifierElimination} command (available in the \textit{CAS View}) takes the quantified input formula and computes an equivalent formula that does not contain any quantifiers.
+    \item The \texttt{ShowProof} command gives a step-by-step algebraic proof for the input geometric statement. Its output is shown in the CAS View.
+\end{enumerate}
+
+\subsection{High and low-level tools}
+
+GeoGebra Discovery provides the above high-level methods to promote investigating geometry theorems. These are considered as ``high-level'' tools because of the simplicity of their  format; and, thus,  they are intended to  be directly used in classrooms. There are also other, more complicated, ways to learn more on the mathematical background of a given statement or just to help in troubleshooting. Those ``low-level'' methods are listed in Section \ref{sec:Appendix}, and therefore not suggested for direct use among students.
+
+Obviously, some of the listed methods are easier, and others are more difficult. For instance, using the command line in the Input Bar in GeoGebra can be considered as a more difficult task for most users than using the \textit{Toolbar}. Thus, it can be suggested that a teacher first shows the students how to deal with the easier methods, and later demonstrates the more demanding ways,  when the students have enough experiments done and are a little bit more acquainted with the reasoning tools.
+
+\subsection{Tools with symbolic support}
+
+As mentioned above, some automated reasoning tools are provided with symbolic support. This feature allows to verify in a mathematically rigorous way general statements of Elementary Geometry that have been conjectured by the user.
+
+A general hint is that the user should start GeoGebra Discovery on startup in the ``graphing calculator'' mode. This turns on showing the labels on each newly added object---this can be crucial for the Relation tool and command when reporting on various relations. 
+
+In most cases, however, the axes are not necessary to be shown: they can be switched off when the \textit{Move} tool is active (it is the leftmost icon showing an arrow cursor) by right-click in the \textit{Graphics View} and de-selecting the \textit{Axes} setting.
+
+In some cases, the \textit{Algebra View} is not needed to be displayed---unless the equations of the implicit curves are to be investigated in detail. This can,  however, be done also by changing the object's label to contain its value, too. (To do so, by right-clicking on the object, choosing \textit{Object Properties}, the user needs to set \textit{Show Label} to \textit{Value} on the \textit{Basic} tab.)
+
+For the \texttt{ShowProof} command it is necessary to have the CAS View open. Before issuing the command, however, it is suggested to clear its content (that is, delete all lines).
+
+
+\subsubsection{The Relation tool and command}
+
+GeoGebra Discovery's Relation tool and command shows a message box that gives the user information about the relation between two or more objects.
+This command allows the user to find out numerically (that is, for the drawn construction with precisely assigned coordinates to each point) whether
+\begin{itemize}
+    \item two lines are perpendicular,
+    \item two lines are parallel,
+    \item two (or more) objects (points, segment lengths, polygon areas, angles) are equal,
+    \item a point lies on a line or conic,
+    \item a line is tangent or a passing line to a conic,
+    \item three points are collinear,
+    \item three lines are concurrent (or parallel),
+    \item four points are concyclic (or collinear).
+\end{itemize}
+Some of these checks can also be performed symbolically, that is, the statement can be verified rigorously for the general case (with arbitrary coordinates) and not only for the displayed concrete geometric construction.
+
+When using the Relation \textit{tool}, the user points on two objects and gets a message box as shown in the figure below. Alternatively, two, three or four objects can be selected by the selection rectangle to invoke the message box. To prevent the user to select unneeded objects in the applet it is also possible to disallow selection of unnecessary objects by
+right clicking on the object, selecting Object properties, choosing the \textit{Advanced} tab and unchecking \textit{Selection allowed}.
+
+When using the Relation \textit{command}, the user types one of the following formulas in the Input Bar:
+\begin{itemize}
+    \item \texttt{Relation( <Object>, <Object> )}
+    \item \texttt{Relation( \{ <Object>, <Object> \} )}
+    \item \texttt{Relation( \{ <Object>, <Object>, <Object> \} )}
+    \item \texttt{Relation( \{ <Object>, <Object>, <Object>, <Object> \} )}
+\end{itemize}
+
+When the message box is shown with one or more true numerical statements on the objects, there may be a button ``More$\ldots$'' shown if there is symbolic support for the given statement. When clicking ``More$\ldots$'', shortly the numerical statement will be updated to a more general symbolic one, stating or denying the validity of the Relation for arbitrary instances of the given construction (i.e.~if some two lines were perpendicular just in the precisely given position or if they are perpendicular in general, etc.).
+
+\paragraph{Example (Thales' circle theorem)}\label{ex:ThalesCircleTheorem}
+\label{par:Thales}
+Here we want to explore the possible perpendicularity of segments $AC$ and $BC$, where $C$ is a point on a circle, while $AB$ is a diameter thereof. We can proceed as follows:
+\begin{center}
+\includegraphics[scale=0.5]{Relation-example}
+\end{center}
+\begin{enumerate}
+    \item By using the \textit{Segment} tool, construct $AB$.
+    \item By choosing the \textit{Semicircle through 2 Points} tool, create arc $c$.
+    \item Put point $C$ on $c$, by using \textit{Point on Object}.
+    \item Create segments $AC$ and $BC$ and denote them by $g$ and $h$, respectively.
+    \item Compare $g$ and $h$ by using the Relation tool and pointing on $g$ and $h$ by the mouse, or type \texttt{Relation(g,h)} in the Input Bar. The following message will be shown:
+    \begin{center}
+    \includegraphics[scale=0.5]{Relation-example-Relation1}
+    \end{center}
+    \item Click ``More$\ldots$''---the message will be changed as follows:
+    \begin{center}
+    \includegraphics[scale=0.5]{Relation-example-Relation2}
+    \end{center}
+    
+\end{enumerate}
+
+Remark that Relation (step 5) looks for relations between $g$ and $h$ from the coordinates and equations assigned to the drawn construction. However, by clicking ``More$\ldots$'' (step 6) we verify that $g$ and $h$ are perpendicular for any points $A$ and $B$ we can choose at step 1.
+
+Sometimes, the relationship among certain objects holds only under certain conditions, that is, not necessarily ``always''. In such cases, if possible, some sufficient conditions would be displayed by the Relation tool. Otherwise GeoGebra Discovery just remarks that the statement is ``true if non-degenerate''. This must be interpreted as meaning that the statement is ``generally true'', but in some side cases (which are `a small number of cases' compared to the general case) the statement may fail.
+
+The symbolic result of Relation can be negative as well, even if the numerical check is positive. For example, by defining two points $P=(0,0)$ and $Q=(0,0)$ Relation compares them numerically, but the symbolic check will result in ``$P$ and $Q$ are equal (false in general)'', because the two given points are considered, in the general symbolic approach, as two free points, with arbitrary coordinates.
+
+A complete overview of the various results of Relation can be found in Section \ref{explanation-table} on page \pageref{explanation-table}.
+
+\subsubsection{The LocusEquation tool and command}
+
+The \texttt{LocusEquation} command calculates the equation of a locus and plots it as an implicit curve.
+It is also available as a tool. There are two kinds of usages:
+
+\begin{itemize}
+\item\textbf{Explicit locus.}
+Consider an input point $\cal{I}$ on a path $\cal{P}$, some construction steps, and an output point $\cal O$. The task is to determine the equation $\cal E$ of the locus of $\cal O$ while $\cal I$ is moving on $\cal P$, and then plot $\cal E$. Point $\cal I$ is usually called \textit{mover}, $\cal O$ is the \textit{tracer}. $\cal E$ is called the \textit{locus equation}, and its graphical visualization is the \textit{locus}.
+
+The syntax of the command is
+\begin{center}
+    \texttt{LocusEquation( <Point Tracer>, <Point Mover> )}.
+\end{center}
+
+As a tool (\mode{locusequation}), after selection it requires the two inputs described above.
+
+\paragraph{Example}
+Let us present the second kind of usage through a particular way of
+building the symmetric of a segment with respect to a point.
+This particular example allows us to exemplify
+better some of the benefits and problems of the \texttt{LocusEquation} command.
+\begin{center}
+\includegraphics[scale=0.5]{LocusEquation-example-explicit}
+\end{center}
+\begin{enumerate}
+    \item By using the \textit{Segment} tool, construct $AB$. This automatically creates segment $f$.
+    \item Put point $C$ on $f$.
+    \item Create point $D$ by using the \textit{Point} tool.
+    \item By using the \textit{Reflect about Point} tool, reflect $C$ about $D$. This defines $C'$.
+    \item Type \texttt{LocusEquation(C',C)} in the Input Bar. Now the implicit curve $a$ will be computed and plotted. This should be a segment (the mirror image of $f$ about $D$), but GeoGebra Discovery needs---and automatically does---to handle $f$ as a line instead of a segment (for algebraic geometric reasons regarding the involved symbolic computation algorithms), thus its mirror image is also a line.
+    \begin{itemize}
+    \item Alternatively, you can select the LocusEquation tool \mode{locusequation} and click $C'$ and then $C$ (or in a different order). This may be a simpler method for some users.
+    \end{itemize}
+    \item Try dragging each draggable objects. It can be visually concluded that the mirror image of a segment about a point is always parallel to the preimage.
+\end{enumerate}
+
+\item \textbf{Implicit locus.}
+Consider a given input point $\cal I$, either as a free point, or on a path $\cal P$. Moreover, assume some construction steps are also given. The user claims a Boolean condition $\cal C$  holds on some objects of the construction. The task is to determine an equation $\cal E$ such that for all points $\cal{I}'$ of it, if $\cal{I}=\cal{I}'$, then $\cal{C}$ holds. Again, $\cal{E}$ is called locus equation, and its graphical representation is the locus.
+
+The syntax of the command is
+\begin{center}
+    \texttt{LocusEquation( <Boolean Expression>, <Point> )}.
+\end{center}
+
+%\vfill\eject %% no idea how to do it elegantly
+
+\paragraph{Example}
+Given a triangle $ABC$, and the circle having $AB$ as diameter, find the locus of $C$ such that $AC^2+BC^2=AB^2$ (a converse of Pythagoras' Theorem).
+\begin{center}
+\includegraphics[scale=0.5]{LocusEquation-example-implicit}
+\end{center}
+\begin{enumerate}
+    \item By using the \textit{Polygon} tool, construct triangle $ABC$. Now segments $a$, $b$ and $c$ will be automatically introduced by GeoGebra Discovery.
+    \item Type \texttt{LocusEquation(a\^{}2+b\^{}2==c\^{}2,C)} in the Input Bar. Now the implicit curve $d$ will be computed and plotted, which seems to be a circle.
+    Note that \textit{two} equal signs must be entered; another possibility is to use $\stackrel{?}{=}$ (by clicking the \framebox{$\alpha$} icon, or inserting this symbol from an external application by using \textit{Copy} and \textit{Paste}).
+    \item Try dragging each draggable objects. It can be visually concluded that if $C$ lies on a circle whose diameter is $AB$, then---because of the right property of the triangle---$a^2+b^2=c^2$ indeed follows.
+\end{enumerate}
+\end{itemize}
+
+A Boolean expression can be:
+\begin{itemize}
+\item An \textit{algebraic} equation of labels of segments, e.g.~\texttt{a\^{}2+b\^{}2==c\^{}2}.
+\item An equality of two geometric objects, e.g.~\texttt{A==B}. Again, note that \textit{two} equal signs must be entered; other possibilities are to use
+\begin{itemize}
+    \item $\stackrel{?}{=}$ (by clicking the \framebox{$\alpha$} icon, or inserting this symbol from an external application by using Copy and Paste), or
+    \item alternatively, \texttt{AreEqual(A,B)} for the complete Boolean expression.
+\end{itemize}
+\item A check if two geometric objects are congruent, e.g.~\texttt{AreCongruent(c,d)}.
+\item A check if a point is on a path, for example, on a line or circle, e.g.~\texttt{A$\in$c}.
+\item A check if two lines or segments are parallel, e.g.~\texttt{p$\parallel$q}. Here also \texttt{AreParallel(p,q)} can be used.
+\item A check if two lines or segments are perpendicular, e.g.~\texttt{p$\perp$q}. Here also \texttt{ArePerpendicular(p,q)} can be used.
+\item \texttt{AreCollinear(A,B,C)} checks if points $A$, $B$ and $C$ are collinear.
+\item \texttt{AreConcurrent(d,e,f)} checks if lines $d$, $e$ and $f$ are concurrent.
+\item \texttt{AreConcyclic(A,B,C,D)} checks if points $A$, $B$, $C$ and $D$ are concyclic.
+\end{itemize}
+Symbols like $\in$, $\parallel$ and $\perp$ can be inserted by clicking the \framebox{$\alpha$} icon, or from an external application by using Copy and Paste.
+
+In many cases it may be useful to change the colour and the line thickness of the resulting curves, and to increase their layer number to ensure that other objects do not hide them. These settings can be changed in the Object properties window.
+
+Further information and references can be found in \cite{AbanadesBotanaKovacsRecioSolyomGecse}.
+
+\subsubsection{The Envelope tool and command}
+
+This tool and command compute the equation of a curve which is tangent to a family of objects while a certain ``parent" of the objects in the family moves on a path \cite{BotanaRecio2017}.
+
+More precisely, given an input point $\cal{I}$ on a path $\cal{P}$, some construction steps, and an output path $\cal O$, either a line or a circle, the task is to determine the equation $\cal E$ of a curve $\cal C$ which is tangent to $\cal O$, while $\cal I$ is moving on $\cal P$. Then finally plot $\cal E$. $\cal I$ is called the mover. $\cal E$ is called the \textit{envelope equation}, and its graphical visualization is the \textit{envelope}.
+
+%\vfill\eject %% no idea how to do it elegantly
+
+\paragraph{Example} A well known way to define an ellipse as an envelope of lines is as follows:
+Given a circle and an internal point of it.
+The curve which is tangent to the family of the perpendicular bisectors of a moving circumpoint
+of the circle and its internal point, is an ellipse.
+
+\begin{center}
+\includegraphics[scale=0.5]{Envelope-example}
+\end{center}
+\begin{enumerate}
+    \item By using the \textit{Circle with Center through Point} tool, construct circle $c$ with centre $A$ and circumpoint $B$.
+    \item Put point $C$ on $c$.
+    \item Create an arbitrary point $D$ inside $c$.
+    \item Construct the \textit{Perpendicular Bisector} $f$ of segment $CD$ by using its endpoints.
+    \item Type \texttt{Envelope(f,C)} in the Input Bar. Now the implicit curve $a$ will be computed and plotted---the equation of the envelope is given in the Algebra Window and it is easily seen as
+the equation of a conic section. In the Geometry Window an ellipse is shown, the graphical
+representation of the computed algebraic equation.
+    \begin{itemize}
+    \item Alternatively, you can select the Envelope tool \mode{envelope} and click $f$ and then $C$ (or in a different order, this is also allowed).
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Technical notes}
+\label{sec:TechnicalNotes}
+
+The following notes describe some situations that might occur when one of the previously described automated reasoning tools in GeoGebra Discovery uses symbolic computations:
+\begin{itemize}
+\item Not all GeoGebra tools and construction steps are supported.
+\item The supported tools work only for a restricted set of geometric objects, i.e.~using points, lines, circles, conics, and sometimes for implicit algebraic curves, but not for arbitrary curves.
+\item Rays and line segments will be treated as infinite lines. Circle arcs will be treated as circles.
+\item Computations of too complicated loci or envelopes may return `undefined' in the Algebra View, meaning, for example, that the computation has not been achieved within the allowed time limit.
+\item Relationship proofs which yield too complicated computations will display the message ``checked numerically''. This must be
+interpreted as follows: GeoGebra Discovery was unable to decide if the relationship is valid in general, but the numerical results promise optimism.
+That is, the relationship can be false in general in this case, too (or not!).
+\item If there is no locus or envelope associated to a construction, then the output yields the empty implicit curve $0=1$. Example: for an arbitrary point $P$
+\begin{center}
+\texttt{LocusEquation(false,P)}
+\end{center}
+returns the empty set.
+\item In some cases, all points of the plane fulfil the input requirements. For instance, the command
+\begin{center}
+\texttt{LocusEquation(true,P)}
+\end{center}
+refers to all points $P$ in the plane. In such cases the output of the command is the equation $0=0$.
+\item Sometimes, the output can include extra branches of the curve that are traditionally not considered to belong to the locus or envelope.
+For example, let points $A$ and $B$ be given, and also a third point $C$ on the circle $c$ with centre $A$
+and circumpoint $B$. Now let us consider the orthocentre $D$ of triangle $ABC$. Then the
+command \texttt{LocusEquation(D,C)} results in a strophoid curve plus a line---here the
+line corresponds to a degenerate case of the triangle when $B=C$, but the line is actually
+not a part of the geometric locus.
+\begin{center}
+\includegraphics[scale=0.5]{strophoid}
+\end{center}
+By dragging point $C$ on the circle, one can find that the output contains an extra branch here.
+In general, to exclude all points that do not play a geometric role, one may need further
+investigations that are not supported by GeoGebra Discovery ART now. See \cite{BotanaRecio2017}
+for some further details.
+\item The graph of the implicit curve may be inaccurate in some cases. This can be improved by using the \texttt{Plot2D} command (see below).
+\end{itemize}
+
+\subsection{Discovering properties}
+
+In this section we give a short overview on the Discover tool and command, and give an example of stepwise discovery.
+
+
+\subsubsection{The Discover tool and command}
+
+The Discover tool and command detect for geometric relationships between objects that are in true in general. They require an input point which is the target of investigation. Each property is checked first numerically, and then, if the result is positive, a second symbolic test is performed internally via the low level \texttt{Prove} command (see below).
+
+The syntax of the \texttt{Discover} command is
+\begin{center}
+    \texttt{Discover( <Point> )}.
+\end{center}
+
+\paragraph{Example} We discover some simple properties of a square.
+
+\begin{center}
+\includegraphics[scale=0.5]{Discover-example-1}
+\end{center}
+\begin{enumerate}
+    \item By using the \textit{Regular Polygon} tool, construct points $A$, $B$, and enter 4 as number of sides.
+    Two more points ($C$ and $D$) will be created.
+    \item Type \texttt{Discover(C)}. The Graphics View will now include a couple of new objects, including the diagonals of the square, and several objects will be colored with matching colors, accordingly to certain relationships. In addition, a second window will show the relationships as a list:
+    \begin{center}
+    \includegraphics[scale=0.5]{Discover-example-2}
+    \end{center}
+    \begin{itemize}
+        \item Alternatively, select the \texttt{Discover} tool \mode{discover} and click point $C$.
+    \end{itemize}
+    \item You may want to deselect the objects that have been automatically marked during the discovery process. It is possible in the \textit{Edit} menu by choosing \textit{Select All} and then \textit{Invert Selection}.
+\end{enumerate}
+
+The discovery process searches for overlapping points, collinearity, concyclicity, parallelism and perpendicularity, and congruent segments.
+If the construction contains several points, the process can be time consuming and therefore a progress bar reports the percentual status. The computation cannot be interrupted in the current versions of GeoGebra Discovery.
+
+\subsubsection{The \texttt{StepwiseDiscovery} command and the corresponding tool}
+
+The \texttt{StepwiseDiscovery} command and the corresponding tool invokes the previously mentioned feature on each newly created point.
+
+The syntax of the command is
+\begin{center}
+    \texttt{StepwiseDiscovery( <Boolean> )}
+\end{center}
+where the input sets the stepwise discovery mode on or off. If the mode is requested to be enabled, the input can be omitted.
+
+\paragraph{Example (continued)}
+\begin{enumerate}
+\setcounter{enumi}{3}
+    \item Type \texttt{StepwiseDiscovery(true)} in the Input Bar.
+    \begin{itemize}
+        \item Alternatively, you can click the small \mode{discover} icon in the Graphics View to enable the stepwise discovery mode.
+        GeoGebra Discovery will inform you on the current working mode in this case.
+    \end{itemize}
+    \item Create the intersection point $E$ of diagonals $AC$ and $BD$. Now the following output will be shown:
+    \begin{center}
+    \includegraphics[scale=0.5]{StepwiseDiscovery-example}
+    \end{center}
+    \item Type \texttt{StepwiseDiscovery(false)} in the Input Bar.
+    \begin{itemize}
+        \item Alternatively, you can click the small \mode{discover} icon in the Graphics View to disable the stepwise discovery mode.
+        GeoGebra Discovery will inform you on the current working mode in this case.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Commands that use cylindrical algebraic demposition}
+
+\subsubsection{The \texttt{Plot2D} command}
+
+The \texttt{Plot2D} command plots a topologically faithful visual representation of logical connectives of algebraic equations or inequalities. In the background, the input formula (that consists of variables $x$ and $y$) is analyzed by a subsystem that creates a cylindrical algebraic decomposition (CAD) accordingly. In this sense, the \texttt{Plot2D} command can be considered as a proof on the correct topology of the input formula.
+
+The syntax of the command is
+\begin{center}
+    \texttt{Plot2D( <Function> )}
+\end{center}
+or
+\begin{center}
+    \texttt{Plot2D( <Function>, "x" )} or \texttt{Plot2D( <Function>, "y" )}
+\end{center}
+where the variable designates the projection variable of the CAD.
+
+\paragraph{Example} Visualization of the tacnode curve $(x^2+y^2-3x)^2-4x^2(2-x)=0$ may be inaccurate if it is plotted directly. By using the \texttt{Plot2D} command, it is possible to analyze the curve via a CAD and plot it accurately. 
+\begin{enumerate}
+    \item Type the equation of the tacnode curve in the Input Bar. An equation labeled with $eq1$ is created.
+    \item Type \texttt{Plot2D(eq1)} in the Input Bar.
+    \begin{center}
+    \includegraphics[scale=0.5]{tacnode1} \includegraphics[scale=0.5]{tacnode2}
+    \end{center}
+    \item To get the CADs accordingly to $x$ or $y$, enter \texttt{Plot2D(eq1,"x")} or \texttt{Plot2D(eq1,"y")} in the Input Bar.
+    \begin{center}
+    \includegraphics[scale=0.5]{tacnode3} \includegraphics[scale=0.5]{tacnode4}
+    \end{center}
+\end{enumerate}
+
+Note: If GeoGebra's default plotting routine (without CAD) would skip plotting because the input cannot be handled properly, the \texttt{Plot2D} command jumps in automatically. For example, changing the equation sign to \texttt{>} in the first step, we automatically get the following output:
+\begin{center}
+\includegraphics[scale=0.5]{tacnode5}
+\end{center}
+
+\subsubsection{Comparison of segments in the Relation tool and command}
+
+The Relation tool can compare lengths of segments symbolically. This may involve inequalities as well, and therefore it may require CAD computation. The command implicitly invokes the \texttt{Compare} low-level command (see below).
+
+\paragraph{Example (Triangle Inequality)}
+\begin{enumerate}
+    \item Draw an arbitrary triangle $ABC$ with sides $a$, $b$ and $c$.
+    \item Type \texttt{Relation(a+b,c)}. GeoGebra Discovery informs the user that ``$a+b$ and $c$ are not equal (checked numerically).''
+    \item Now click ``More$\ldots$''. Now the information ``It is generally true that $(a+b)>c$ under the condition is not degenerate'' is displayed in the window.
+\end{enumerate}
+
+\subsubsection{The \texttt{RealQuantifierElimination} command}
+
+The \texttt{RealQuantifierElimination} command (available in the \textit{CAS View}) takes the quantified input formula and computes an equivalent formula that does not contain any quantifiers. The computation requires very sophisticated computations that are based on creating a CAD for the input formula. As a result, the user can rely on a black-box computation which ensures that the input and output formulas are equivalent.
+
+The syntax of the command is
+\begin{center}
+    \texttt{RealQuantifierElimination( <Expression> )}
+\end{center}
+where the input can be an arbitrary quantified expression which contains logical connectives of polynomial equations or inequalities.
+
+\paragraph{Example} By entering \texttt{RealQuantifierElimination($\exists$x (a x²+b x+c=0))} in the CAS View,
+the output
+\[4 \; a \; c - b^{2} \leq 0 \wedge \left(a \neq 0 \vee \left(c = 0 \right) \vee 4 \; a \; c - b^{2} < 0 \right)\]
+is shown. Indeed, it no longer contains the existential quantifier.
+
+\subsection{Proving statements step-by-step: the \texttt{ShowProof} command}
+
+By default, GeoGebra Discovery does not focus on presenting a proof of a statement. This is usually avoided
+to hide the very high number of atomic steps from the user. In some cases, however, it may be important to get a verifyable proof, maybe by manual human checking or for machine verification. The \texttt{ShowProof} command gives a step-by-step algebraic proof for the input geometric statement. Its output is shown in the CAS View.
+
+The syntax of the command is
+\begin{center}
+    \texttt{ShowProof( <Boolean Expression> )}
+\end{center}
+where the input is the statement to prove. At the moment, a presentation of a proof may be unavailable in some cases, for example, if the input is an inequality, or, if the input statement is true on parts (see below). In such cases there may be a black-box proof computed by GeoGebra Discovery, and the result of such a computation can be trustworthy, however, a step-by-step proof cannot be provided.
+
+\paragraph{Example (Thales' circle theorem, continued from page \pageref{ex:ThalesCircleTheorem})}
+\begin{enumerate}
+\setcounter{enumi}{6}
+    \item Open the CAS View.
+    \item Enter \texttt{ShowProof(f$\perp$g)} in the Input Bar. Now, after a little time the CAS View will contain the following entries:
+    \begin{center}
+    \includegraphics[scale=0.5]{ShowProof-example-1}
+    \end{center}
+    When scrolling down, the second part of the proofs reads as follows:
+    \begin{center}
+    \includegraphics[scale=0.5]{ShowProof-example-2}
+    \end{center}
+    In addition, some objects of the Graphics View will be labeled by the corresponding variables and
+    the equations that appear in the showed algebraic proof.
+        \begin{center}
+    \includegraphics[scale=2]{ShowProof-example}
+    \end{center}
+
+\end{enumerate}
+
+Sometimes the proof includes long lines that may contain many mathematical terms if certain polynomials are of high degree. Currently, the maximal length of a line in the CAS View is limited to 5000 characters for the \texttt{ShowProof} command. If the limit is exceeded, it is recommended to export the CAS View to HTML format, or to plain text in Maple, Mathematica or Giac format, for further investigation. The exported file always contains the full output without the limit for the maximal length of a line.
+
+\section{Classroom uses: conjecture, proof and generalization}\label{sec:classroom}
+
+Technically speaking,  the easiest symbolic tool is the Relation tool in the list above. On the other hand, some teaching scenarios may require different tools to consider, or more than one tool, but in a different order than the one listed above.
+
+\subsection{Thales' circle theorem}
+
+In many traditional maths classes, Thales' circle theorem is stated in an explicit form: if $C$ is on a semicircle, the segments $g$ and $h$ are perpendicular (see Section \ref{par:Thales} on page
+\pageref{par:Thales}). Obviously,  the truth of such statement can be easily verified through the Relation and/or Prove commands. In this way, GeoGebra Discovery automated reasoning tools simply act here as a kind of encyclopaedic geometry coach, as a kind of ``omniscient'' teacher.  But, we think it is far more interesting to approach this statement in a quite different way, formulating it as an open-ended question: \textit{Let $ABC$ be an arbitrary triangle. What is the geometric locus of $C$ if the angle at $C$ is to be right?} (See also
+\cite{Artigue} for a similar approach.)
+\begin{center}
+\includegraphics[scale=0.5]{Thales-triangle}
+\end{center}
+In this approach it may make more sense to use the technically more difficult \texttt{LocusEquation(g$\perp$h,C)} command first, than finishing the construction and use the Relation tool or command directly. Moreover, the output of the \texttt{LocusEquation} command can suggest a conjecture for the students, namely that the locus curve is something like a circle passing through $A$ and $B$. (The locus
+is a circle \textit{without} points $A$ and $B$.) The Algebra View shows the equation of the
+computed locus, this can be however difficult for younger learners to identify.
+
+Finally, Thales' circle theorem can be generalized towards the theorem of the inscribed angle in a circle,
+that is, the angle does not change as its vertex is moved to different positions on the circle.
+In this case the condition is no longer $g\perp h$, but that the angle between them equals to a fixed one. GeoGebra Discovery currently supports entering this kind of investigation with the syntax
+\begin{center}
+\texttt{LocusEquation($\alpha$==$\beta$,C)}
+\end{center}
+if $\alpha$ is fixed and $\beta=\angle{ACB}$.
+
+To summarize this approach:
+\begin{enumerate}
+    \item[step 1:] an implicit locus is computed with GeoGebra Discovery,
+    \item[step 2:] a conjecture for the output curve is made by the student,
+    \item[step 3:] the conjecture is checked by the Relation tool or command in GeoGebra Discovery,
+    \item[step 4:] the proof can be optionally worked out by paper and pencil by the student,
+    \item[step 5:] the theorem can be generalized by plotting further implicit loci with GeoGebra Discovery---as further experiments for the student.
+\end{enumerate}
+
+\subsection{A worked-out example: The midline theorem}
+
+Here step-by-step instructions are provided on a possible way to investigate the midline theorem  (stating that the line through the midpoints of two sides of a triangle is parallel to the third side) by using GeoGebra Discovery's automated reasoning tools.
+The midline theorem states that in a triangle,
+the segment joining the midpoints of any two sides will be parallel to the third side and half its length.
+Here we provide step-by-step instructions to formalize this theorem with GeoGebra Discovery.
+
+\paragraph{Step 1}
+\begin{center}
+\includegraphics[scale=0.5]{classroom1}
+\end{center}
+\begin{enumerate}
+    \item By using the \textit{Polygon} tool, construct triangle $ABC$. This will automatically create segments $a$, $b$ and $c$.
+    \item By using the \textit{Midpoint or Center} tool, create the midpoint $D$ of $a$.
+    \item Put point $E$ on $b$.
+    \item Create line $f$ which joins $D$ and $E$.
+    \item Ask GeoGebra Discovery on the requirement for $E$ in order to have $f$ parallel to $c$: type \texttt{LocusEquation(c$\parallel$f,E)} in the Input Bar. Now the implicit curve $d$ will be computed and plotted, and it seems to be a single point. Note: it may be useful to change the colour and the line thickness of the implicit curve $d$, and also to increase its layer number to ensure that other objects do not hide it. Both settings can be changed in the Object properties window.
+\end{enumerate}
+\paragraph{Step 2}
+\begin{center}
+\includegraphics[scale=0.5]{classroom2}
+\end{center}
+\begin{enumerate}
+    \item[6.] Drag the free objects and conjecture that $E$ must be the midpoint of $b$.
+    \item[7.] To confirm this conjecture, create midpoint $F$ of segment $b$ (and align labels of $d$ and $F$ to avoid overlapping). Drag the free objects again.
+\end{enumerate}
+\paragraph{Step 3}
+\begin{center}
+\includegraphics[scale=0.5]{classroom3}
+\end{center}
+\begin{enumerate}
+    \item[8.] Make the objects $E$, $f$ and $d$ invisible by hiding them.
+    \item[9.] Join $D$ and $F$ by segment $g$.
+    \item[10.] Use the \textit{Relation} tool to compare $c$ and $g$. They seem to be parallel.
+    \item[11.] Click the first ``More$\ldots$'' in the popup window and check symbolically that they are indeed parallel unless $A=B$ (but this is a degenerate case).
+\end{enumerate}
+\begin{center}
+\includegraphics[scale=0.5]{classroom3-Relation-1}
+\end{center}
+The students may continue with a next step 4, for instance,  looking for an elegant way to prove this statement, or just stop here if there is no time for further work in the classroom.
+
+Moreover, a further step 5 could be included after obtaining the classical proof, by considering related questions such as: it is true that $c$ and $g$ do not have the same length---but can $g$ be computed by using the length of $c$? Maybe $c=1.5\cdot g$, or maybe more? By clicking the second ``More$\ldots$'' we can learn that $c=2\cdot g$, and this can lead to related activities.
+
+\begin{center}
+\includegraphics[scale=0.5]{classroom3-Relation-2}
+\end{center}
+
+
+\subsection{Further examples}\label{sec:further}
+
+The traditional Triangle Inequality can be translated into an equation, which can be subject to an investigation of degenerated triangles. As a generalization, the synthetic definition of the ellipse can be discovered.
+Recall the Triangle Inequality, concerning a triangle of sides $a,b,c$  states that $a+b>c$. Now,  by using GeoGebra Discovery ART and the command
+\texttt{LocusEquation(a+b==c,C)},  the output will be the line $AB$,  which
+describes all degenerate triangles. On the other hand, by issuing \texttt{LocusEquation(a+b==2c,C)},
+an ellipse will be drawn with foci $A$ and $B$, focal distance $c/2$, semi-major axis $c$
+and eccentricity $1/2$. Similar investigations can be performed when using different
+ratios between $a+b$ and $c$.
+\begin{center}
+\includegraphics[scale=0.5]{further1}
+\end{center}
+
+Another application, in a triangle $ABC$, is to derive the locus equation
+of $C$ with the condition $a\stackrel{?}{=}b$ (step 1). Clearly, $C$ must
+lie on the bisector of segment $AB$ (step 2). As  by explicitly putting
+$C$ on the bisector, GeoGebra Discovery confirms that $AC=BC$ when starting the
+Relation tool's symbolic machinery (step 3). After proving the statement
+by traditional means (step 4), a generalization can be obtained by typing
+e.g.~\texttt{LocusEquation(a==2b,C)}: this can be an interesting
+experiment for advanced learners too (step 5).
+\begin{center}
+\includegraphics[scale=0.5]{further2}
+\end{center}
+
+See \cite{Kovacs2017} for additional examples.
+
+\section{Limitations: a case study of Thales' circle theorem}\label{sec:limits}
+
+Intuitive use of GeoGebra automated reasoning tools may result in unexpected outputs in some cases. This subsection explains some common mistakes during their use, exemplified through an investigation on Thales' circle theorem  (see Section \ref{par:Thales} on page \pageref{par:Thales}), as follows:
+
+\begin{center}
+\includegraphics[scale=0.5]{limitations-Thales1-1}
+\end{center}
+\begin{enumerate}
+    \item Create points $A$, $B$ and $C$.
+    \item Create lines $f=AC$, $g=BC$.
+    \item Check the result of the command \texttt{Relation(f,g)}: ``$f$ intersects with $g$''.
+    \item Ask GeoGebra Discovery about geometric prerequisites of $f\perp g$:
+\begin{center}\texttt{LocusEquation(f$\perp$g,C)}.\end{center}
+An implicit curve $a$ which seems to be a circle will be shown. The equation of the circle
+is given in the Algebra Window.
+    \item Move $C$ in the neighbourhood of the implicit curve as close as possible. Now \texttt{Relation(f,g)} may still report that ``$f$ intersects with $g$''. \textbf{Why? Because the point $C$ may be not lying accurately enough on the circle. Depending on the adjusted rounding precision (see the \textit{Options} menu) we might need to exactly state that it is on the circle to get the perpendicularity condition.}
+    \begin{enumerate}
+      \item Try attaching point $C$ on the obtained implicit curve $a$ by using the \textit{Attach / Detach Point} tool. \textbf{In fact, this is not allowed in GeoGebra, because by definition, $a$ depends on $C$, and a circular dependency  would occur when attaching $C$ on $a$ (i.e.~$a$ will depend on $C$ and $C$ will depend on $a$), and this would make no sense.}
+      \item Instead, create a new point $D$ by putting it on the implicit curve $a$. This is allowed in GeoGebra. Create also lines $h=AD$, $i=BD$.
+\begin{center}
+\includegraphics[scale=0.5]{limitations-Thales1-2}
+\end{center}
+      \item Check the result of the command \texttt{Relation(h,i)}: ``$h$ and $i$ are perpendicular'' when checked numerically. By clicking ``More$\ldots$'' the result is however ``checked numerically''. \textbf{Why? Because GeoGebra interprets the underlying implicit curve as the result of a particular setup of the construction. In other words: in GeoGebra this implicit curve is a numerical object, it does not have a symbolic representation, as the result of a construction in terms of the given free points $A, B, C$. GeoGebra does not ``know'' that $c$ is a circle with diameter $A$, $B$ going through $C$. That is, symbolic checks based on using an implicit curve as one element of the construction are not possible.}
+      \item The proper way to finalize the steps in this approach is to create the circle with diameter $AB$ with a Circle tool, for example by using the \textit{Semicircle through 2 Points} tool, after detaching $D$ from $a$ and making $a$ invisible. Now $D$ can be attached to the semicircle.
+\begin{center}
+\includegraphics[scale=0.5]{limitations-Thales1-3}
+\end{center}
+      (Optionally the implicit curve can be set to visible by displaying it with a different style. In this example another style was used for the semicircle as well.) Finally \texttt{Relation(h,i)} will now yield the correct outputs,  both numerically and symbolically.
+    \end{enumerate}
+\end{enumerate}
+
+\section{Appendix}
+\label{sec:Appendix}
+\subsection{Low-level GeoGebra Discovery tools}
+
+Automated reasoning tools in GeoGebra Discovery are completed by some low-level tools,  prepared for learning more,  and in a more accurate way,  about geometric properties.
+
+\subsubsection{The \texttt{Compare} command}
+The \texttt{Compare} command is similar to the \texttt{Relation} command with the difference that the output is put in a GeoGebra text variable. For instance, in the example of the Triangle Inequality, the command \texttt{Compare(a+b,c)} gives the textual output \texttt{(a+b)>c} and puts it, by default, in the variable $text1$. At the same time, the textual output is displayed in the Graphics View, by default in its origin.
+
+\subsubsection{The \texttt{Prove} command}
+The \texttt{Prove} command decides if a geometric statement is true in general. It has three possible outputs:
+\begin{itemize}
+    \item \textit{true} means that the statement is always true, or true under some non-degeneracy \cite{Chou,CoxLittleOShea,RecioVelez} or essential \cite{KovacsRecioSolyomGecse} conditions, or true on parts, false on parts 
+\cite{BotanaRecio2016,KovacsRecioVelez}.
+    \item \textit{false} means that the statement is false in general.
+    \item \textit{undefined} means that GeoGebra Discovery cannot decide because of some reason:
+    \begin{itemize}
+        \item The statement cannot be translated into a model which can be further investigated. This usually means that algebraization of the statement failed because of 
+        \begin{itemize}
+            \item theoretical impossibility (e.g.~using a transcendent function as a construction step, for example, sine of $x$),
+            \item missing implementation in GeoGebra Discovery.
+        \end{itemize}
+        \item The translated statement in algebraic geometry is too difficult to solve. This means that either there are too many variables, or the equations are hard to handle by the solver algorithm. This results in either a timeout or an out of memory error.
+        \item The solver algorithm was able to investigate the situation, but the result is ambiguous: either the statement is false, or it is true under certain conditions---but the algorithm was not able to decide which case is present.
+        \item There was an internal error in GeoGebra Discovery during the computations.
+    \end{itemize}
+\end{itemize}
+The \texttt{Prove} command may involve CAD operations if the default model (in algebraic geometry) cannot give a satisfactory answer.
+
+% Prevent putting the image on the next page.
+%\vfill\eject % FIXME
+
+\paragraph{Example}
+In a triangle a segment joining the midpoints of two sides
+is parallel to the third side and half its length.
+\begin{center}
+\includegraphics[scale=0.5]{Prove-example}
+\end{center}
+\begin{enumerate}
+\item Construct the triangle $ABC$ by using the \textit{Polygon} tool.
+\item Construct the midpoints $D$ and $E$ of sides $a$ and $b$, respectively, by using the \textit{Midpoint or Center} tool.
+\item By using the \textit{Segment} tool, create $f$ by joining $D$ and $E$.
+\item Type \texttt{Prove(f$\parallel$c)} to obtain \textit{true} in the Algebra View as Boolean Value $d$. Note that the parallel sign must be entered by using either
+\begin{itemize}
+\item the list of the mathematical symbols by clicking the \framebox{$\alpha$} icon in the Input Bar, or
+\item inserting this symbol externally by using Copy and Paste.
+\item Alternatively, \texttt{f$\parallel$c} can be substituted by \texttt{AreParallel(f,c)} also.
+\end{itemize}
+
+\item Type \texttt{Prove(c==3f)}. Now the answer is \textit{false}. Note that \textit{two} equal signs must be entered; other possibilities are to use
+\begin{itemize}
+    \item \texttt{Prove(c$\stackrel{?}{=}$3f)}, or
+    \item \texttt{Prove(AreEqual(c,3f))}.
+\end{itemize}
+
+\end{enumerate}
+
+\subsubsection{The \texttt{ProveDetails} command}
+The \texttt{ProveDetails} command has as similar behaviour as the \texttt{Prove} command and uses the same algorithms in the decision process, but it may provide more information on the results. It has three possible outputs:
+\begin{itemize}
+    \item \textit{\{true\}} means that the statement is always true.
+    \item \textit{\{true, \{$\ldots$\}\}} if the statement is true under some non-degeneracy \cite{Chou,RecioVelez} or essential \cite{KovacsRecioSolyomGecse} conditions, or true on parts, false on parts \cite{BotanaRecio2016,KovacsRecioVelez}: the denied form of these conditions are listed in the internal braces. (If the list remains ``$\ldots$'', it means that no synthetic translation could be found.)  If the conjunction of the negated conditions holds, then the statement should be true.
+    \item \textit{\{false\}} means that the statement is false in general.
+\end{itemize}
+\paragraph{Example (continued)}
+\begin{enumerate}
+\setcounter{enumi}{5}
+    \item Type \texttt{ProveDetails(c==3f)}. Now the answer is \textit{\{false\}}.
+    \item Type \texttt{ProveDetails(c==2f)}. Now the answer is \textit{\{true\}}.
+    \item Type \texttt{ProveDetails(c<3f)}. Now the answer is \textit{\{true,\{``AreCollinear(A,B,C)'',``AreEqual(A,B)''\}\}}. This means that the statement $c<3f$ is true if $A$, $B$ and $C$ are not collinear and $A\neq B$. The converse is not necessarily true: If $A$, $B$ and $C$ are collinear but $A\neq B$, the statement $c<3f$ still holds. On the other hand, if $A=B$, $c=f=0$ and therefore the inequality $c<3f$ is false.
+\end{enumerate}
+Note that GeoGebra Discovery tries to find out the conditions with a mixed strategy. Some parts of the conditions are added by obtaining possible non-degeneracy conditions algebraically and then the geometrically ``simplest'' one is selected, if there is such a condition---if not, GeoGebra Discovery adds ``$\ldots$'' to the list of conditions. Also, some conditions may be forced in advance, before starting the computation, these usually include the assumption that the first two free points (in many cases, denoted by $A$ and $B$) differ, or each three of the free points designate a non-degerate triangle.
+
+\subsubsection{A comparison of \texttt{Prove}, \texttt{ProveDetails} and \texttt{Relation}}
+\label{explanation-table}
+
+The following table explains in a concise way the meanings of the outputs of the commands \texttt{Prove},
+\texttt{ProveDetails} and \texttt{Relation}.
+The outputs of these three commands should never be contradictory but
+complimentary. For most users, however, the use of the \texttt{Relation} command is suggested.
+
+The \texttt{Relation} window usually reports the results in a more geometrically readable form than the
+\texttt{ProveDetails} command, but with an equivalent meaning.
+
+For further details see \cite{Kovacs2015,BotanaHohenwarterJanicicKovacsPetrovicRecioWeitzhofer}, the current state of the prover has been, however, already improved since then.
+
+% This table was exported from LyX. LaTeX experts: Please improve its look if possible.
+\begin{center}
+\begin{tabular}{|>{\raggedright}m{0.15\textwidth}|>{\centering}m{0.2\textwidth}|>{\centering}m{0.2\textwidth}|>{\centering}m{0.3\textwidth}|}
+\hline 
+\multicolumn{3}{|c|}{GeoGebra Discovery outputs} & \multirow{2}{0.3\textwidth}{\textbf{\centerline{Conclusion}}}\tabularnewline
+\cline{1-3} 
+\textbf{\centerline{Prove}} & \textbf{ProveDetails} & \textbf{Relation}'s symbolic window & \tabularnewline
+\hline 
+\multirow{4}{0.15\textwidth}{\centerline{\footnotesize{}true}} & {\footnotesize{}\{true\}} & {\footnotesize{}always true} & {\footnotesize{}The statement is true.}\tabularnewline
+% example: Pythagoras
+\cline{2-4} 
+ & \multicolumn{1}{>{\centering}m{0.2\columnwidth}|}{{\footnotesize{}\{true,\{}\emph{\footnotesize{}conditions}{\footnotesize{}\}\}}} & {\footnotesize{}generally true under }\emph{\footnotesize{}conjunction of the negations of the specified
+conditions} & {\footnotesize{}The statement is true if none of the specified }\emph{\footnotesize{}conditions}{\footnotesize{}
+hold. These negated conditions are sufficient, but maybe not necessary. There
+may be other sufficient conditions to make the statement true.}\tabularnewline
+% example: inversion-line-circle4
+\cline{2-4} 
+ & {\footnotesize{}\{true,\{``$\ldots$''\}\}} & {\footnotesize{}generally true if non-degenerate} & {\footnotesize{}The statement is true if certain equations hold. These
+equations have no visually clear geometric meanings for GeoGebra Discovery.}\tabularnewline
+% example: circle-midpoints-are-concyclic-ex211, ICMI2-square, 11gon-1
+\cline{2-4} 
+ & \multicolumn{1}{>{\centering}m{0.2\columnwidth}|}{{\footnotesize{}\{true,\{}\emph{\footnotesize{}conditions}{\footnotesize{}\},``c''\}}} & {\footnotesize{}true on parts, false on parts under }\emph{\footnotesize{}conjunction of the negations of the specified
+conditions} & {\footnotesize{}The statement is true on parts, false on parts if none of the specified }\emph{\footnotesize{}conditions}{\footnotesize{}
+hold. These negated conditions are sufficient, but maybe not necessary. There
+may be other sufficient conditions to make the statement true.}\tabularnewline
+% example: (Prove only via Singular) rhombus-AL, Thales-underdetermined, Kovacs-example1
+\hline 
+\multirow{1}{0.15\textwidth}{\centerline{\footnotesize{}false}} & {\footnotesize{}\{false\}} & {\footnotesize{}false in general} & {\footnotesize{}The statement is false.}\tabularnewline
+% example: (Prove only via Singular) points-equal
+\hline 
+\multirow{1}{0.15\textwidth}{\centerline{\footnotesize{}undefined}} & {\footnotesize{}\{\}} & {\footnotesize{}checked numerically} & {\footnotesize{}GeoGebra Discovery was unable to decide if the statement is
+true or false. The numerical check confirms the truth, but the symbolic
+check was unsuccessful due to computational difficulties, or the symbolic
+check for the given statement is not yet implemented.}\tabularnewline
+\hline 
+\end{tabular}
+\end{center}
+
+\subsection{Translation of GeoGebra Discovery commands}
+
+The names of GeoGebra Discovery automated reasoning tools may need to be translated to other languages. For example, the German translation of \texttt{Prove} can be \texttt{Pr\"ufe}.
+% or \texttt{Demuestra}
+To learn the translated command names the following steps are recommended:
+
+\begin{enumerate}
+\item Create a GeoGebra file which contains the required commands in the Algebra View.
+\item Change the language in GeoGebra Discovery in the Options menu by choosing \textit{Language}.
+\item The command names will be automatically changed in the Algebra View.
+\item Move the mouse over a command in the Algebra View and read its translated name off.
+\end{enumerate}
+
+\subsection{Debugging}
+Starting GeoGebra Discovery via command line there are more possibilities to investigate the results. Here the method on a typical Linux installation is demonstrated. We assume that a Snapcraft version is installed from \url{https://snapcraft.io/geogebra-discovery}.
+
+The user needs to start GeoGebra Discovery by the following command:
+{
+%\scriptsize
+    \begin{center}
+        \texttt{geogebra-discovery --logfile=/dev/stdout --logshowcaller=false $\backslash$\\ --logshowtime=false --logshowlevel=false} 
+    \end{center}
+} % \scriptsize
+A typical output looks like as follows:
+{
+\scriptsize
+\begin{lstlisting}[language=mylog]
+Using AUTO
+Using BOTANAS_PROVER
+A = (3.42, 1.86) /* free point */
+// Free point A(v1,v2)
+B = (10.48, 3.1) /* free point */
+// Free point B(v3,v4)
+f = Segment[A, B] /* Segment [A, B] */
+C = Point[f] /* Point on f */
+// Constrained point C(v5,v6)
+Hypotheses:
+1. -v5*v4+v6*v3+v5*v2-v3*v2-v6*v1+v4*v1
+g = Segment[A, C] /* Segment [A, C] */
+h = Segment[C, B] /* Segment [C, B] */
+Processing numerical object
+Hypotheses have been processed.
+giac evalRaw input: evalfa(expand(ggbtmpvarf))
+giac evalRaw output: ggbtmpvarf
+input = expand(ggbtmpvarf)
+result = ggbtmpvarf
+eliminate([ggbtmpvarf-((ggbtmpvarg)+(ggbtmpvarh))=0,ggbtmpvarh^2=v11^2,ggbtmpvarg^2=v12^2,ggbtmpvarf^2=v13^2],[ggbtmpvarh,ggbtmpvarg,ggbtmpvarf])
+giac evalRaw input: evalfa(eliminate([ggbtmpvarf-((ggbtmpvarg)+(ggbtmpvarh))=0,ggbtmpvarh^2=v11^2,ggbtmpvarg^2=v12^2,ggbtmpvarf^2=v13^2],[ggbtmpvarh,ggbtmpvarg,ggbtmpvarf]))
+// Groebner basis computation time 0.000448 Memory -1e-06M
+giac evalRaw output: {v11^4-2*v11^2*v12^2+v12^4-2*v11^2*v13^2-2*v12^2*v13^2+v13^4}
+input = eliminate([ggbtmpvarf-((ggbtmpvarg)+(ggbtmpvarh))=0,ggbtmpvarh^2=v11^2,ggbtmpvarg^2=v12^2,ggbtmpvarf^2=v13^2],[ggbtmpvarh,ggbtmpvarg,ggbtmpvarf])
+result = {v11^4-2*v11^2*v12^2+v12^4-2*v11^2*v13^2-2*v12^2*v13^2+v13^4}
+giac evalRaw input: evalfa(eliminate([ggbtmpvarf-((ggbtmpvarg)+(ggbtmpvarh))=0,ggbtmpvarh=v11,ggbtmpvarg=v12,ggbtmpvarf=v13],[ggbtmpvarh,ggbtmpvarg,ggbtmpvarf]))
+// Groebner basis computation time 0.000592 Memory -1e-06M
+giac evalRaw output: {v11+v12-v13}
+input = eliminate([ggbtmpvarf-((ggbtmpvarg)+(ggbtmpvarh))=0,ggbtmpvarh=v11,ggbtmpvarg=v12,ggbtmpvarf=v13],[ggbtmpvarh,ggbtmpvarg,ggbtmpvarf])
+result = {v11+v12-v13}
+giac evalRaw input: evalfa(simplify({v11^4-2*v11^2*v12^2+v12^4-2*v11^2*v13^2-2*v12^2*v13^2+v13^4}/{v11+v12-v13}))
+giac evalRaw output: {v11^3-v11^2*v12+v11^2*v13-v11*v12^2-2*v11*v12*v13-v11*v13^2+v12^3+v12^2*v13-v12*v13^2-v13^3}
+input = simplify({v11^4-2*v11^2*v12^2+v12^4-2*v11^2*v13^2-2*v12^2*v13^2+v13^4}/{v11+v12-v13})
+result = {v11^3-v11^2*v12+v11^2*v13-v11*v12^2-2*v11*v12*v13-v11*v13^2+v12^3+v12^2*v13-v12*v13^2-v13^3}
+giac evalRaw input: evalfa(factor(v11^3-v11^2*v12+v11^2*v13-v11*v12^2-2*v11*v12*v13-v11*v13^2+v12^3+v12^2*v13-v12*v13^2-v13^3))
+giac evalRaw output: (v11-v12-v13)*(v11-v12+v13)*(v11+v12+v13)
+input = factor(v11^3-v11^2*v12+v11^2*v13-v11*v12^2-2*v11*v12*v13-v11*v13^2+v12^3+v12^2*v13-v12*v13^2-v13^3)
+result = (v11-v12-v13)*(v11-v12+v13)*(v11+v12+v13)
+Trying to detect polynomial -v13-v12+v11
+-v13-v12+v11 means h = f + g
+Trying to detect polynomial v13-v12+v11
+v13-v12+v11 means f + h = g
+Trying to detect polynomial v13+v12+v11
+v13+v12+v11 means f + g + h = 0, uninteresting
+Thesis equations (non-denied ones):
+2. v11^2-v6^2-v5^2+2*v6*v4-v4^2+2*v5*v3-v3^2
+3. v12^2-v6^2-v5^2+2*v6*v2-v2^2+2*v5*v1-v1^2
+4. v13^2-v4^2-v3^2+2*v4*v2-v2^2+2*v3*v1-v1^2
+Thesis reductio ad absurdum (denied statement), product of factors:
+(v13^4-2*v13^2*v12^2+v12^4-2*v13^2*v11^2-2*v12^2*v11^2+v11^4)*v14-1
+that is,
+5. -1+v14*v13^4-2*v14*v13^2*v12^2+v14*v12^4-2*v14*v13^2*v11^2-2*v14*v12^2*v11^2+v14*v11^4
+substitutions: {v1=0, v2=0}
+Eliminating system in 8 variables (5 dependent)
+giac evalRaw input: evalfa([[ff:=\"\"],[aa:=eliminate2([v12^2-v6^2-v5^2,v11^2-v6^2-v5^2+2*v6*v4-v4^2+2*v5*v3-v3^2,-1+v14*v13^4-2*v14*v13^2*v12^2+v14*v12^4-2*v14*v13^2*v11^2-2*v14*v12^2*v11^2+v14*v11^4,v13^2-v4^2-v3^2,-v5*v4+v6*v3],revlist([v6,v11,v12,v13,v14]))],[bb:=size(aa)],[for ii from 0 to bb-1 do ff+=(\"[\"+(ii+1)+\"]: [1]:  unicode95uunicode91u1]=1\");cc:=factors(aa[ii]);dd:=size(cc);for jj from 0 to dd-1 by 2 do ff+=(\"  unicode95uunicode91u\"+(jj/2+2)+\"]=\"+cc[jj]); od; ff+=(\" [2]: \"+cc[1]);for kk from 1 to dd-1 by 2 do ff+=(\",\"+cc[kk]);od;od],[if(ff==\"\") begin ff:=[0] end],ff][5])
+// Groebner basis computation time 0.000249 Memory -1e-06M
+giac evalRaw output: "[1]: [1]:  unicode95uunicode91u1]=1  unicode95uunicode91u2]=1 [2]: 1,1"
+Considering NDG 1...
+Found a better NDG score (0.0) than Infinity
+Statement is GENERALLY TRUE
+Benchmarking: 38 ms
+STATEMENT IS TRUE (yes/no: TRUE)
+OUTPUT for ProveDetails: null = {true, {"f + h = g", "h = f + g"}}
+\end{lstlisting}
+} % \scriptsize
+There is intentionally no easier way to show the users this type of output. However, the last few lines of the debug information are available in GeoGebra Discovery in the \textit{Help} menu, by choosing \textit{About/License}, and clicking \textit{System Information}---this copies the latest debug messages into the clipboard.
+
+\section*{Acknowledgments}
+
+Authors would like to express thier gratitude to Prof.~T.~Dana-Picard,
+for his careful reading and many suggestions to improve earlier versions
+of this manuscript.  Work partially supported by Spanish Research
+Project MTM2017-88796-P (for a previous version of this tutorial) and
+``Mathematical Visualization: Foundations, Algorithms and Applications'',
+PID2020-113192GB-I00 from the Spanish MICINN. 
+
+\section*{Biographical notes}
+
+\begin{itemize}
+
+\item
+\textit{Zolt\'an Kov\'acs} (J\'aszber\'eny, Hungary, October 31, 1975). M.Sc.~(1999),
+J\'ozsef Attila University of Szeged,
+Ph.D.~(2015), Johannes Kepler University of Linz. Assistant professor at
+The Private University College of Education of the Diocese of Linz, Institute of Initial Teacher Training (Austria),
+since 2015.
+Team member of Center of Mathematics Education of Linz at University of Linz, Department of Mathematics Education.
+Volunteer core developer at GeoGebra, since 2010.
+Author of over hundred published scientific papers and several scientific
+communications (including various software packages) in different international journals and conferences.
+Topics: Mathematics Education, Automated Reasoning in Dynamic Geometry, Computer Algebra.
+\url{https://matek.hu/zoltan}.
+
+Postal address: Private P\"adagogische Hochschule der Di\"ozese Linz.
+Salesianumweg 3, 4020 Linz, Austria.
+
+\item
+\textit{Tom\'as Recio} (Oviedo, Spain, December 14, 1949).  B.Sc., M.Sc.~(1972),
+Ph.D.~(1976), Universidad Complutense de Madrid. Professor of Algebra
+at the Universidad de Cantabria (Santander, Spain), since 1982. Founder
+and Chair of the Institute GeoGebra of Cantabria.
+Author of over hundred
+fifty published scientific papers and three hundred fifty scientific
+communications in different international journals and conferences.
+Topics: Real Algebraic Geometry, CAD, Robotics, Computer Algebra and
+Geometry,  Automatic Reasoning in Dynamic Geometry, Mathematics
+Education. \url{http://www.recio.tk}.
+
+Postal address: Departamento de Matem\'aticas, Estadística y Computaci\'on.
+Facultad de Ciencias, Universidad de Cantabria. Avenida de los Castros, s/n,
+39071 Santander, Spain.
+
+\item
+\textit{M.~Pilar V\'elez} (Logro\~no, Spain, June 3, 1967).  B.Sc., M.Sc.~(1990),
+Ph.D.~(1995), Universidad Complutense de Madrid. Professor of Applied
+Mathematics at the Universidad Antonio de Nebrija (Madrid, Spain), since
+1997. Rector of Universidad Antonio de Nebrija from 2010 to 2014. 
+Author of several scientific papers and scientific communications in different
+international journals and conferences. Topics: Real Algebraic Geometry, Computer Algebra, 
+Automatic Reasoning in Dynamic Geometry, Mathematics Education. \url{https://orcid.org/0000-0002-5724-4300}.
+
+Postal address: Departamento de Ingenier\'{\i}a Industrial,
+Escuela Polit\'ecnica Superior, Universidad Antonio de Nebrija.
+c/ Pirineos, 55, 28040 Madrid, Spain.
+
+\end{itemize}
+
+
+\input{bibliography.tex}
+
+\end{document}
