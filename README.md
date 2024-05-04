@@ -11,10 +11,8 @@ and contribute a translation.
 
 ## Compilation
 
-We use the command `pdflatex english` and `pdflatex deutsch` twice to
-generate the PDF version of the English and German translations.
-Alternatively the `make` and `make pdf` commands do the same. The command
-`make odt` will create .odt version of the text.
+We use the command `pdflatex english` twice to generate the PDF version.
+Alternatively the `make` and `make pdf` commands do the same.
 
 ## GeoGebra files
 
@@ -30,9 +28,6 @@ GeoGebra Discovery. These sources take place in the [ggb](ggb) folder.
 * Zoltán Kovács <zoltan@geogebra.org>
 * Tomás Recio <tomas.recio@unican.es>
 * M. Pilar Vélez <pvelez@nebrija.es>
-
-## Translations and translators
-* [German](pdf/deutsch.pdf) by Katharina Schiffler <katharina.schiffler@ph-linz.at>
 
 ## License
 GNU General Public License 3
